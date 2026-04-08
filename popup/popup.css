@@ -122,3 +122,77 @@ h1 {
 .options-link:hover {
   text-decoration: underline;
 }
+
+
+
+
+.section-label {
+  font-size: 0.78rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.profiles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.empty-msg {
+  color: #555;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 7px;
+  padding: 8px 10px;
+}
+
+.profile-name {
+  font-size: 0.88rem;
+  color: #ddd;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-btns {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-fill {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.btn-delete {
+  background: rgba(255, 80, 80, 0.12);
+  color: #ff7070;
+  border: 1px solid rgba(255, 80, 80, 0.25);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  background: rgba(255, 80, 80, 0.25);
+}

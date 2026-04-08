@@ -8,41 +8,25 @@
 </head>
 <body>
   <div class="container">
-    <h1>🎯 Form Filler</h1>
+    <h1>Smart Fill</h1>
     <p class="subtitle">Fill forms instantly</p>
 
     <div class="button-group">
-      <button id="fillRandom" class="btn btn-primary">
-        🎲 Fill Random Data
-      </button>
-      <button id="saveProfile" class="btn btn-save">
-        💾 Save Current Profile
-      </button>
-      <button id="fillSaved" class="btn btn-secondary">
-        ✅ Fill Saved Profile
-      </button>
+      <button id="fillRandom" class="btn btn-primary">Fill Random Data</button>
+      <button id="saveProfile" class="btn btn-save">Save Current Form</button>
     </div>
 
     <p id="statusMsg" class="status-msg"></p>
 
     <div class="divider"></div>
 
-    <div class="options">
-      <label class="checkbox-label">
-        <input type="checkbox" id="includeEmail" checked>
-        <span>Include realistic emails</span>
-      </label>
-      <label class="checkbox-label">
-        <input type="checkbox" id="includePhone" checked>
-        <span>Include phone numbers</span>
-      </label>
+    <p class="section-label">Saved Profiles</p>
+    <div id="profilesList" class="profiles-list">
+      <p class="empty-msg">No saved profiles yet.</p>
     </div>
-
-    <a href="#" id="openOptions" class="options-link">
-      ⚙️ Manage Saved Profiles
-    </a>
   </div>
 
   <script src="popup.js"></script>
 </body>
+
 </html>
