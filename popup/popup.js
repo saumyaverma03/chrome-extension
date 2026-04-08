@@ -19,59 +19,83 @@ document.getElementById("fillRandom").addEventListener("click", () => {
 
 document.getElementById("saveProfile").addEventListener("click", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(
-      tabs[0].id,
-      { action: "GET_FIELD_VALUES" },
-      (response) => {
-        if (!response || !response.fields || response.fields.length === 0) {
-          showStatus("No fields found on this page.", true);
-          return;
-        }
+    chrome.tabs.sendMessage(tabs[0].id, { action: "GET_FIELD_VALUES" }, (response) => {
+      if (!response || !response.fields || response.fields.length === 0) {
+        showStatus("No fields found.", true)
+        return
+      }
+      const name = prompt("Name this profile:")
+      if (!name) return
+      chrome.storage.local.get("profiles", (result) => {
+        const profiles = result.profiles || {}
+        profiles[name] = response.fields
+        chrome.storage.local.set({ profiles }, () => {
+          showStatus("Saved as " + name)
+          loadProfiles()
+        })
+      })
+    })
+  })
+})
 
-        chrome.storage.local.set({ savedProfile: response.fields }, () => {
-          showStatus(`Saved ${response.fields.length} fields!`);
-        });
-      },
-    );
-  });
-});
 
-document.getElementById("fillSaved").addEventListener("click", () => {
-  chrome.storage.local.get("savedProfile", (result) => {
-    if (!result.savedProfile) {
-      showStatus("No saved profile yet.", true);
-      return;
+function loadProfiles() {
+  chrome.storage.local.get("profiles", (result) => {
+    const profiles = result.profiles || {}
+    const names = Object.keys(profiles)
+    const list = document.getElementById("profilesList")
+
+    if (names.length === 0) {
+      list.innerHTML = '<p class="empty-msg">No saved profiles yet.</p>'
+      return
     }
 
-    const data = {};
-    result.savedProfile.forEach((field) => {
-      data[field.index] = field.value;
-    });
+    list.innerHTML = names.map(name => `
+      <div class="profile-row">
+        <span class="profile-name">${name}</span>
+        <div class="profile-btns">
+          <button class="btn-fill" data-name="${name}">Fill</button>
+          <button class="btn-delete" data-name="${name}">✕</button>
+        </div>
+      </div>
+    `).join('')
 
+    list.querySelectorAll('.btn-fill').forEach(btn => {
+      btn.addEventListener('click', () => fillFromProfile(btn.dataset.name))
+    })
+
+    list.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', () => deleteProfile(btn.dataset.name))
+    })
+  })
+}
+
+function fillFromProfile(name) {
+  chrome.storage.local.get("profiles", (result) => {
+    const profile = result.profiles[name]
+    const data = {}
+    profile.forEach(field => {
+      data[field.index] = field.value
+    })
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: "FILL_SAVED", data: data });
-      showStatus("Filled from saved profile!");
-    });
-  });
-});
+      chrome.tabs.sendMessage(tabs[0].id, { action: "FILL_SAVED", data })
+      showStatus("Filled from " + name)
+    })
+  })
+}
 
-document.getElementById("saveProfile").addEventListener("click", () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(
-      tabs[0].id,
-      { action: "GET_FIELD_VALUES" },
-      (response) => {
-        const name = prompt("Name this profile: ");
-        if (!name) return; //user cancelled
-        chrome.storage.local.get("profiles", (result) => {
-          const profiles = result.profiles || {}; //existing profiles or empty object
-          profiles[name] = response.fields; //add new profile
-          chrome.storage.local.set({ profiles }); //save back
-          chrome.storage.local.get("profiles", (result) => {
-            console.log("All saved profiles:", result.profiles);
-          });
-        });
-      },
-    );
-  });
-});
+function deleteProfile(name) {
+  chrome.storage.local.get("profiles", (result) => {
+    const profiles = result.profiles || {}
+    delete profiles[name]
+    chrome.storage.local.set({ profiles }, () => {
+      showStatus("Deleted " + name)
+      loadProfiles()
+    })
+  })
+}
+
+// load profiles when popup opens
+loadProfiles()
+
+

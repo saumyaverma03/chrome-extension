@@ -118,4 +118,3 @@ function randomName() {
 
   return random(first) + ' ' + random(last)
 }
-
