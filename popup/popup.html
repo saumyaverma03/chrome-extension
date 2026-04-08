@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Filler</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Form Filler</h1>
+    <p class="subtitle">Fill forms instantly</p>
+
+    <div class="button-group">
+      <button id="fillRandom" class="btn btn-primary">
+        🎲 Fill Random Data
+      </button>
+      <button id="saveProfile" class="btn btn-save">
+        💾 Save Current Profile
+      </button>
+      <button id="fillSaved" class="btn btn-secondary">
+        ✅ Fill Saved Profile
+      </button>
+    </div>
+
+    <p id="statusMsg" class="status-msg"></p>
+
+    <div class="divider"></div>
+
+    <div class="options">
+      <label class="checkbox-label">
+        <input type="checkbox" id="includeEmail" checked>
+        <span>Include realistic emails</span>
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="includePhone" checked>
+        <span>Include phone numbers</span>
+      </label>
+    </div>
+
+    <a href="#" id="openOptions" class="options-link">
+      ⚙️ Manage Saved Profiles
+    </a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
