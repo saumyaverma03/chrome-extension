@@ -21,18 +21,25 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.action === 'FILL_SAVED') {
     fillFields(message.data)
   }
+  if(message.action === 'SCAN_FIELDS') {
+    sendResponse({ fields: scanFields()})
+  }
 
   return true
 })
 
 function fillFields(data) {
-    const inputs = document.querySelectorAll('input, textarea, select')
-    const filtered = Array.from(inputs).filter((el) => !['checkbox', 'radio', 'submit', 'button', 'hidden', 'file'].includes(el.type))
+  const inputs = document.querySelectorAll('input, textarea, select')
+  const filtered = Array.from(inputs).filter((el) => !['checkbox', 'radio', 'submit', 'button', 'hidden', 'file'].includes(el.type))
 
-    filtered.forEach((el, index) => {
-        el.value = data[index]
-    })
+  filtered.forEach((el, index) => {
+    el.value = data[index]
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+    el.dispatchEvent(new Event('change', { bubbles: true }))
+    el.dispatchEvent(new Event('blur', { bubbles: true }))
+  })
 }
+
 
 function scanFields() {
   const skipTypes = ["checkbox", "radio", "submit", "button", "hidden", "file"];
