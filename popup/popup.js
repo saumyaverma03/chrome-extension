@@ -129,9 +129,13 @@ Requirements:
 - All data should belong to the same fictional person
 - Match field types (valid emails for email fields, etc.)
 - Be professional but fictional
-- Return format: { "0": "value", "1": "value" }`;
+- Return ONLY the fields provided, no extra fields
+- Return format: { "0": "value", "1": "value" }
+- The JSON must have exactly ${fields.length} keys, numbered 0 to ${fields.length - 1}`
+
 
         try {
+          console.log('Fields sent to AI:', fields)
           const res = await fetch(
             "https://gentle-tooth-e125.saumyaaverma03.workers.dev",
             {
@@ -149,7 +153,13 @@ Requirements:
 
           const data = await res.json();
           console.log("API response:", data);
-          const fillData = JSON.parse(data);
+          // const fillData = JSON.parse(data);
+
+          const cleaned = data
+            .replace(/```json\n?/g, "")
+            .replace(/```\n?/g, "")
+            .trim();
+          const fillData = JSON.parse(cleaned);
 
           chrome.tabs.sendMessage(tabs[0].id, {
             action: "FILL_SAVED",
