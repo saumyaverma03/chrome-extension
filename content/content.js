@@ -57,28 +57,38 @@ function scanFields() {
   }));
 }
 
+function fakerOr(fakerFn, fallbackFn){
+  if(typeof faker!== 'undefined') {
+    return fakerFn()
+  }
+  else{
+    fallbackFn()
+  }
+}
+
 function generateValue(field) {
     const hints = [field.name, field.id, field.placeholder].join(' ').toLowerCase()
 
     if (field.type === 'email' || hints.includes('email')) {
-        return randomEmail()
-    }
+    return typeof faker !== 'undefined' ? faker.internet.email() : randomEmail()
+}
 
     if (field.type === 'password' || hints.includes('password')) {
-        return randomPassword()
-    }
+    return typeof faker !== 'undefined' ? faker.internet.password() : randomPassword()
+}
 
     if (field.type === 'username' || hints.includes('username')) {
-        return randomUsername()
-    }
+    return typeof faker !== 'undefined' ? faker.internet.username() : randomUsername()
+}
 
-    if (hints.includes('phone') || hints.includes('mobile')) {
-        return randomPhone()
-    }
+   if (hints.includes('phone') || hints.includes('mobile')) {
+    return typeof faker !== 'undefined' ? faker.phone.number() : randomPhone()
+}
 
-    if (hints.includes('name')) {
-        return randomName()
-    }
+if (field.type === 'name' || hints.includes('name')) {
+    return typeof faker !== 'undefined' ? faker.person.fullName() : randomName()
+}
+
 
     // fallback — not sure what it is, put something generic
     return 'test input'
