@@ -113,15 +113,50 @@ document.getElementById("fillAI").addEventListener("click", async () => {
       tabs[0].id,
       { action: "SCAN_FIELDS" },
       async (response) => {
+        if (!response || !response.fields) {
+          showStatus("Could not connect to page. Try refreshing.", true);
+          return;
+        }
         const fields = response.fields.map((f) => ({
           index: f.index,
           type: f.type,
           placeholder: f.placeholder,
           name: f.name,
+          options: f.options,
         }));
 
+        const nationalities = [
+          "Japanese",
+          "Brazilian",
+          "German",
+          "Nigerian",
+          "Indian",
+          "French",
+          "Mexican",
+          "Korean",
+        ];
+        const genders = [
+          "Woman",
+          "Man",
+          "Non-binary",
+          "Genderqueer / Gender diverse",
+          "Genderfluid",
+          "Agender",
+          "Two-Spirit",
+          "A gender not listed",
+          "Prefer not to say",
+        ];
+        const birthYear = Math.floor(Math.random() * (2000 - 1960 + 1)) + 1960;
+        const birthDay = Math.floor(Math.random() * 28) + 1;
+
+        const randomNationality =
+          nationalities[Math.floor(Math.random() * nationalities.length)];
+        const randomGender =
+          genders[Math.floor(Math.random() * genders.length)];
+
         const aiPrompt = `Generate realistic fake data for a form. Return ONLY a valid JSON object, no explanation.
-Use a random fictional person each time — vary the name, nationality, and background.
+Generate data for a ${randomGender} person of ${randomNationality} origin.
+
 
 Fields:
 ${JSON.stringify(fields, null, 2)}
@@ -132,11 +167,11 @@ Requirements:
 - Be professional but fictional
 - Return ONLY the fields provided, no extra fields
 - Return format: { "0": "value", "1": "value" }
-- The JSON must have exactly ${fields.length} keys, numbered 0 to ${fields.length - 1}`
-
+- The JSON must have exactly ${fields.length} keys, numbered 0 to ${fields.length - 1}
+- Use ${birthDay} as the birth day and ${birthYear} as the birth year — do not use any other values`;
 
         try {
-          console.log('Fields sent to AI:', fields)
+          console.log("Fields sent to AI:", fields);
           const res = await fetch(
             "https://gentle-tooth-e125.saumyaaverma03.workers.dev",
             {
