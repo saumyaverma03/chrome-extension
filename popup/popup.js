@@ -121,6 +121,7 @@ document.getElementById("fillAI").addEventListener("click", async () => {
         }));
 
         const aiPrompt = `Generate realistic fake data for a form. Return ONLY a valid JSON object, no explanation.
+Use a random fictional person each time — vary the name, nationality, and background.
 
 Fields:
 ${JSON.stringify(fields, null, 2)}
