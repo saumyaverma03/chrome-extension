@@ -81,87 +81,61 @@ function scanFields() {
 }
 
 function fakerOr(fakerFn, fallbackFn) {
-  if (typeof faker !== "undefined") {
-    return fakerFn();
-  } else {
-    fallbackFn();
-  }
+    if (typeof faker !== 'undefined') {
+        return fakerFn()
+    }
+    return fallbackFn()
 }
+
 
 function generateValue(field) {
-  const hints = [field.name, field.id, field.placeholder]
-    .join(" ")
-    .toLowerCase();
+    const hints = [field.name, field.id, field.placeholder].join(' ').toLowerCase()
 
-  if (field.type === "email" || hints.includes("email")) {
-    return typeof faker !== "undefined"
-      ? faker.internet.email()
-      : randomEmail();
-  }
+    if (field.type === 'email' || hints.includes('email')) {
+        return fakerOr(() => faker.internet.email(), randomEmail)
+    }
 
-  if (field.type === "password" || hints.includes("password")) {
-    return typeof faker !== "undefined"
-      ? faker.internet.password()
-      : randomPassword();
-  }
+    if (field.type === 'password' || hints.includes('password')) {
+        return fakerOr(() => faker.internet.password(), randomPassword)
+    }
 
-  if (field.type === "username" || hints.includes("username")) {
-    return typeof faker !== "undefined"
-      ? faker.internet.username()
-      : randomUsername();
-  }
+    if (field.type === 'username' || hints.includes('username')) {
+        return fakerOr(() => faker.internet.username(), randomUsername)
+    }
 
-  if (hints.includes("phone") || hints.includes("mobile")) {
-    return typeof faker !== "undefined" ? faker.phone.number() : randomPhone();
-  }
+    if (hints.includes('phone') || hints.includes('mobile')) {
+        return fakerOr(() => faker.phone.number(), randomPhone)
+    }
 
-  if (field.type === "name" || hints.includes("name")) {
-    return typeof faker !== "undefined"
-      ? faker.person.fullName()
-      : randomName();
-  }
+    if (hints.includes('name')) {
+        return fakerOr(() => faker.person.fullName(), randomName)
+    }
 
-  // fallback — not sure what it is, put something generic
-  return "test input";
+    return 'test input'
 }
+
 
 function random(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function randomEmail() {
-  const names = ["alex", "jordan", "taylor", "morgan", "casey", "riley"];
-  const domains = ["gmail", "yahoo", "hotmail", "outlook"];
-  const extensions = [".com", ".in", ".au", ".net"];
-
-  return random(names) + "@" + random(domains) + random(extensions);
+  return random(FALLBACK_EMAIL_NAMES) + '@' + random(FALLBACK_EMAIL_DOMAINS) + random(FALLBACK_EMAIL_EXTENSIONS)
 }
-function randomPassword() {
-  const words = ["Tiger", "Storm", "Blade", "Phoenix", "Nova"];
-  const numbers = ["12", "99", "42", "007", "123"];
-  const symbols = ["!", "@", "#", "$"];
 
-  return random(words) + random(numbers) + random(symbols);
+function randomPassword() {
+  return random(FALLBACK_PASSWORD_WORDS) + random(FALLBACK_PASSWORD_NUMBERS) + random(FALLBACK_PASSWORD_SYMBOLS)
 }
 
 function randomUsername() {
-  const names = ["alex", "jordan", "taylor", "morgan", "casey"];
-  const numbers = ["42", "99", "7", "101", "23"];
-
-  return random(names) + "_" + random(numbers);
+  return random(FALLBACK_USERNAME_NAMES) + '_' + random(FALLBACK_USERNAME_NUMBERS)
 }
 
 function randomPhone() {
-  const area = ["555", "212", "415", "312", "713"];
-  const mid = ["867", "234", "456", "789", "321"];
-  const last = ["5309", "1234", "5678", "9012", "3456"];
-
-  return "+1 " + random(area) + "-" + random(mid) + "-" + random(last);
+  return '+1 ' + random(FALLBACK_PHONE_AREA) + '-' + random(FALLBACK_PHONE_MID) + '-' + random(FALLBACK_PHONE_LAST)
 }
 
 function randomName() {
-  const first = ["Alex", "Jordan", "Taylor", "Morgan", "Casey", "Riley"];
-  const last = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia"];
-
-  return random(first) + " " + random(last);
+  return random(FALLBACK_FIRST_NAMES) + ' ' + random(FALLBACK_LAST_NAMES)
 }
+
