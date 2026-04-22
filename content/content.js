@@ -58,12 +58,25 @@ function fillFields(data) {
   });
 }
 
+function getLabel(el) {
+  if (el.id) {
+    const label = document.querySelector(`label[for="${el.id}"]`)
+    if (label) return label.textContent.trim()
+  }
+  const parent = el.closest('label')
+  if (parent) return parent.textContent.trim()
+  const ariaLabel = el.getAttribute('aria-label')
+  if (ariaLabel) return ariaLabel.trim()
+  return ''
+}
+
 function scanFields() {
   const skipTypes = ["checkbox", "radio", "submit", "button", "hidden", "file"];
   const inputs = document.querySelectorAll("input, textarea, select");
 
   return Array.from(inputs)
     .filter((el) => !skipTypes.includes(el.type))
+    .filter((el) => el.name !== 'g-recaptcha-response')
     .map((el, index) => ({
       index: index,
       type: el.type,
@@ -71,6 +84,7 @@ function scanFields() {
       id: el.id,
       placeholder: el.placeholder,
       value: el.value,
+      label: getLabel(el), 
       options:
         el.tagName === "SELECT"
           ? Array.from(el.options)

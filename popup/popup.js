@@ -122,6 +122,7 @@ document.getElementById("fillAI").addEventListener("click", async () => {
           type: f.type,
           placeholder: f.placeholder,
           name: f.name,
+          label: f.label,
           options: f.options,
         }));
 
