@@ -125,6 +125,8 @@ document.getElementById("fillAI").addEventListener("click", async () => {
           options: f.options,
         }));
 
+        const cacheKey = 'ai_cache_' + fields.map(f => f.name + f.type + f.placeholder).join('|')
+
         const nationalities = [
           "Japanese",
           "Brazilian",
@@ -170,6 +172,20 @@ Requirements:
 - The JSON must have exactly ${fields.length} keys, numbered 0 to ${fields.length - 1}
 - Use ${birthDay} as the birth day and ${birthYear} as the birth year — do not use any other values`;
 
+    const cached = await new Promise(resolve => {
+      chrome.storage.local.get(cacheKey, result => resolve(result[cacheKey]))
+    })
+
+    if (cached) {
+  const useCache = confirm('This form was filled before. Use cached data?\n\nClick Cancel to generate fresh data.')
+
+  if (useCache) {
+    chrome.tabs.sendMessage(tabs[0].id, { action: 'FILL_SAVED', data: cached })
+    showStatus('Filled from cache!')
+    return
+  }
+}
+
         try {
           console.log("Fields sent to AI:", fields);
           const res = await fetch(
@@ -196,6 +212,7 @@ Requirements:
             .replace(/```\n?/g, "")
             .trim();
           const fillData = JSON.parse(cleaned);
+          chrome.storage.local.set({ [cacheKey]: fillData})
 
           chrome.tabs.sendMessage(tabs[0].id, {
             action: "FILL_SAVED",
@@ -203,8 +220,11 @@ Requirements:
           });
           showStatus("AI filled the form!");
         } catch (err) {
-          showStatus("AI failed — try again.", true);
-          console.error(err);
+          console.error(err)
+          showStatus("AI failed — using random fill instead", true);
+          chrome.tabs.query({active: true, currentWindow:true}, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id, {action: 'FILL_RANDOM'})
+          })
         }
       },
     );
