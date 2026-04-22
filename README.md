@@ -84,7 +84,17 @@ Sign up at [console.groq.com](https://console.groq.com) — free tier available.
    - **Fill Random Data** — instant fill with no API call
    - **Save Current Form** — save the current values as a named profile
    - Click **Fill** next to any saved profile to reuse it
+  
+     
+## Engineering Decisions
 
+- **Groq over Claude/OpenAI** — sub-second inference was critical for UX. Groq's Llama 3.3 70B is fast enough to feel instant, and the free tier absorbed all development/testing without a payment wall.
+- **Regex-first, LLM-fallback** — most form fields (email, phone, name) are trivially pattern-matchable. Using AI for every field wastes latency and cost. The hybrid approach is fast *and* intelligent.
+- **Cloudflare Worker proxy** — the Groq API key never touches the extension bundle. Users install the extension without needing their own key.
+- **Vanilla JS over React** — the popup is simple enough that a build pipeline adds friction without value. Kept the bundle tiny.
+- **`chrome.storage.local` over a backend DB** — privacy-first by design. User profiles never leave the browser.
+
+  
 ## What I Learned Building This
 
 - Chrome Extension architecture (Manifest V3, content scripts, service workers, message passing)
@@ -93,3 +103,10 @@ Sign up at [console.groq.com](https://console.groq.com) — free tier available.
 - API integration with a secure backend proxy pattern
 - Prompt engineering for structured JSON output
 - Cloudflare Workers for serverless backend deployment
+
+
+## Limitations & Future Work
+
+- Field detection accuracy drops on forms with generic labels (e.g., "Enter details") — would improve with few-shot examples in the prompt
+- No structured outputs / JSON mode — current prompt relies on the model returning valid JSON, which fails ~5% of the time
+- No evaluation harness — accuracy was measured manually; automating this is the next logical step
