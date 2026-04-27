@@ -12,10 +12,9 @@ function getActiveTab(callback) {
   }
 }
 
-
 function showStatus(msg, isError = false) {
   statusMsg.textContent = msg;
-  statusMsg.style.color = isError ? "#ff6b6b" : "#38ef7d";
+  statusMsg.style.color = isError ? "#ff6b6b" : "";
   setTimeout(() => {
     statusMsg.textContent = "";
   }, 3000);

@@ -1,3 +1,45 @@
+:root {
+  --bg: #2d2840;
+  --text: #f2eee7;
+  --subtitle: #a3c4bc;
+  --profile-bg: rgba(255, 255, 255, 0.04);
+  --profile-border: #413c58;
+  --divider: #444;
+  --section-label: #a3c4bc;
+  --empty-msg: #7a7a8a;
+  --status-color: #38ef7d;
+  --btn-random-start: #667eea;
+  --btn-random-end: #764ba2;
+  --btn-random-text: #ffffff;
+  --btn-save-start: #f7971e;
+  --btn-save-end: #ffd200;
+  --btn-save-text: #1a1a2e;
+  --btn-ai-start: #f953c6;
+  --btn-ai-end: #b91d73;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: linear-gradient(135deg, #f0ebf8 0%, #fff0f5 100%);
+    --text: #210203;
+    --subtitle: #6d98ba;
+    --profile-bg: rgba(0, 0, 0, 0.04);
+    --profile-border: #bcaa8a;
+    --divider: #bcaa8a;
+    --section-label: #6d98ba;
+    --empty-msg: #9a8a7a;
+    --status-color: #435892;
+    --btn-save-text: #210203;
+    --btn-random-start: #3b72b0;
+    --btn-random-end: #5b9bd5;
+    --btn-save-start: #c4623e;
+    --btn-save-end: #d98b68;
+    --btn-ai-start: #8b5cf6;
+    --btn-ai-end: #ec4899;
+    --btn-random-text: #F2EEE7;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,9 +48,9 @@
 
 body {
   width: 320px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #ffffff;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .container {
@@ -23,7 +65,7 @@ h1 {
 
 .subtitle {
   text-align: center;
-  color: #a0a0a0;
+  color: var(--subtitle);
   font-size: 0.85rem;
   margin-bottom: 20px;
 }
@@ -45,24 +87,33 @@ h1 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: transparent;
+  color: var(--text);
+  border: 1.5px solid var(--btn-random-start);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  background: rgba(102, 126, 234, 0.1);
+  box-shadow: none;
 }
 
+
 .btn-save {
-  background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
-  color: #1a1a2e;
+  background: transparent;
+  color: var(--subtitle);
+  border: none;
+  font-size: 0.9rem;
+  padding: 8px 16px;
 }
 
 .btn-save:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(247, 151, 30, 0.4);
+  transform: none;
+  color: var(--text);
+  box-shadow: none;
+  text-decoration: underline;
 }
+
 
 .btn-secondary {
   background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
@@ -79,13 +130,13 @@ h1 {
   font-size: 0.8rem;
   margin-top: 12px;
   min-height: 1.2em;
-  color: #38ef7d;
+  color: var(--status-color);
   transition: opacity 0.3s ease;
 }
 
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #444, transparent);
+  background: linear-gradient(90deg, transparent, var(--divider), transparent);
   margin: 20px 0;
 }
 
@@ -123,12 +174,9 @@ h1 {
   text-decoration: underline;
 }
 
-
-
-
 .section-label {
   font-size: 0.78rem;
-  color: #666;
+  color: var(--section-label);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 8px;
@@ -143,7 +191,7 @@ h1 {
 }
 
 .empty-msg {
-  color: #555;
+  color: var(--empty-msg);
   font-size: 0.85rem;
   text-align: center;
   padding: 12px 0;
@@ -153,15 +201,15 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--profile-bg);
+  border: 1px solid var(--profile-border);
   border-radius: 7px;
   padding: 8px 10px;
 }
 
 .profile-name {
   font-size: 0.88rem;
-  color: #ddd;
+  color: var(--text);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -198,7 +246,11 @@ h1 {
 }
 
 .btn-ai {
-  background: linear-gradient(135deg, #f953c6 0%, #b91d73 100%);
+  background: linear-gradient(
+    135deg,
+    var(--btn-ai-start) 0%,
+    var(--btn-ai-end) 100%
+  );
   color: white;
 }
 
@@ -211,8 +263,8 @@ h1 {
 
 .btn-popout {
   background: none;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #aaa;
+  border: 1px solid var(--profile-border);
+  color: var(--subtitle);
   border-radius: 5px;
   padding: 2px 7px;
   font-size: 0.85rem;
@@ -220,6 +272,6 @@ h1 {
 }
 
 .btn-popout:hover {
-  background: rgba(255,255,255,0.08);
-  color: white;
+  background: var(--profile-bg);
+  color: var(--text);
 }
