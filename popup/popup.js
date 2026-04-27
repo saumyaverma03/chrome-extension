@@ -1,24 +1,50 @@
 console.log("Form Filler popup opened!");
 
 const statusMsg = document.getElementById("statusMsg");
+const params = new URLSearchParams(window.location.search);
+const fixedTabId = params.get("tabId") ? parseInt(params.get("tabId")) : null;
+
+function getActiveTab(callback) {
+  if (fixedTabId) {
+    chrome.tabs.get(fixedTabId, (tab) => callback([tab]));
+  } else {
+    chrome.tabs.query({ active: true, currentWindow: true }, callback);
+  }
+}
 
 function showStatus(msg, isError = false) {
   statusMsg.textContent = msg;
-  statusMsg.style.color = isError ? "#ff6b6b" : "#38ef7d";
+  statusMsg.style.color = isError ? "#ff6b6b" : "";
   setTimeout(() => {
     statusMsg.textContent = "";
   }, 3000);
 }
 
 document.getElementById("fillRandom").addEventListener("click", () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action: "FILL_RANDOM" });
-    showStatus("Filled with random data!");
+  const startTime = Date.now();
+  getActiveTab((tabs) => {
+    chrome.tabs.sendMessage(
+      tabs[0].id,
+      { action: "SCAN_FIELDS" },
+      (response) => {
+        const totalFields = response?.fields?.length || 0;
+        chrome.tabs.sendMessage(tabs[0].id, { action: "FILL_RANDOM" });
+        showStatus("Filled with random data!");
+        console.log("Fill stats:", {
+          domain: tabs[0]?.url ? new URL(tabs[0].url).hostname : 'unknown',
+          totalFields,
+          cacheHits: 0,
+          regexHits: totalFields,
+          llmCalls: 0,
+          timeMs: Date.now() - startTime,
+        });
+      },
+    );
   });
 });
 
 document.getElementById("saveProfile").addEventListener("click", () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  getActiveTab((tabs) => {
     chrome.tabs.sendMessage(
       tabs[0].id,
       { action: "GET_FIELD_VALUES" },
@@ -77,6 +103,20 @@ function loadProfiles() {
   });
 }
 
+document.getElementById("popOut").addEventListener("click", () => {
+  getActiveTab((tabs) => {
+    const tabId = tabs[0]?.id;
+    chrome.windows.create({
+      url: chrome.runtime.getURL("popup/popup.html") + `?tabId=${tabId}`,
+      type: "popup",
+      width: 360,
+      height: 520,
+    });
+  });
+  window.close();
+});
+
+
 function fillFromProfile(name) {
   chrome.storage.local.get("profiles", (result) => {
     const profile = result.profiles[name];
@@ -84,7 +124,7 @@ function fillFromProfile(name) {
     profile.forEach((field) => {
       data[field.index] = field.value;
     });
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    getActiveTab((tabs) => {
       chrome.tabs.sendMessage(tabs[0].id, { action: "FILL_SAVED", data });
       showStatus("Filled from " + name);
     });
@@ -97,6 +137,7 @@ function deleteProfile(name) {
     delete profiles[name];
     chrome.storage.local.set({ profiles }, () => {
       showStatus("Deleted " + name);
+      const startTime = Date.now();
       loadProfiles();
     });
   });
@@ -107,12 +148,17 @@ loadProfiles();
 
 document.getElementById("fillAI").addEventListener("click", async () => {
   showStatus("Generating...");
+  const startTime = Date.now();
 
-  chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+  getActiveTab(async (tabs) => {
     chrome.tabs.sendMessage(
       tabs[0].id,
       { action: "SCAN_FIELDS" },
       async (response) => {
+        let cacheHit = 0;
+        let llmCalls = 0;
+        const domain = tabs[0]?.url ? new URL(tabs[0].url).hostname : 'unknown';
+
         if (!response || !response.fields) {
           showStatus("Could not connect to page. Try refreshing.", true);
           return;
@@ -126,7 +172,9 @@ document.getElementById("fillAI").addEventListener("click", async () => {
           options: f.options,
         }));
 
-        const cacheKey = 'ai_cache_' + fields.map(f => f.name + f.type + f.placeholder).join('|')
+        const cacheKey =
+          "ai_cache_" +
+          fields.map((f) => f.name + f.type + f.placeholder).join("|");
 
         const nationalities = [
           "Japanese",
@@ -173,22 +221,39 @@ Requirements:
 - The JSON must have exactly ${fields.length} keys, numbered 0 to ${fields.length - 1}
 - Use ${birthDay} as the birth day and ${birthYear} as the birth year — do not use any other values`;
 
-    const cached = await new Promise(resolve => {
-      chrome.storage.local.get(cacheKey, result => resolve(result[cacheKey]))
-    })
+        const cached = await new Promise((resolve) => {
+          chrome.storage.local.get(cacheKey, (result) =>
+            resolve(result[cacheKey]),
+          );
+        });
 
-    if (cached) {
-  const useCache = confirm('This form was filled before. Use cached data?\n\nClick Cancel to generate fresh data.')
+        if (cached) {
+          const useCache = confirm(
+            "This form was filled before. Use cached data?\n\nClick Cancel to generate fresh data.",
+          );
 
-  if (useCache) {
-    chrome.tabs.sendMessage(tabs[0].id, { action: 'FILL_SAVED', data: cached })
-    showStatus('Filled from cache!')
-    return
-  }
-}
+          if (useCache) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              action: "FILL_SAVED",
+              data: cached,
+            });
+            showStatus("Filled from cache!");
+            cacheHit = 1;
+            console.log("Fill stats:", {
+              domain,
+              totalFields: fields.length,
+              cacheHits: cacheHit,
+              regexHits: 0,
+              llmCalls,
+              timeMs: Date.now() - startTime,
+            });
+            return;
+          }
+        }
 
         try {
           console.log("Fields sent to AI:", fields);
+          llmCalls = 1;
           const res = await fetch(
             "https://gentle-tooth-e125.saumyaaverma03.workers.dev",
             {
@@ -213,19 +278,27 @@ Requirements:
             .replace(/```\n?/g, "")
             .trim();
           const fillData = JSON.parse(cleaned);
-          chrome.storage.local.set({ [cacheKey]: fillData})
+          chrome.storage.local.set({ [cacheKey]: fillData });
 
           chrome.tabs.sendMessage(tabs[0].id, {
             action: "FILL_SAVED",
             data: fillData,
           });
+          console.log("Fill stats:", {
+            domain,
+            totalFields: fields.length,
+            cacheHits: cacheHit,
+            regexHits: 0,
+            llmCalls,
+            timeMs: Date.now() - startTime,
+          });
           showStatus("AI filled the form!");
         } catch (err) {
-          console.error(err)
+          console.error(err);
           showStatus("AI failed — using random fill instead", true);
-          chrome.tabs.query({active: true, currentWindow:true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {action: 'FILL_RANDOM'})
-          })
+          getActiveTab((tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id, { action: "FILL_RANDOM" });
+          });
         }
       },
     );

@@ -30,33 +30,50 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 function fillFields(data) {
   const inputs = document.querySelectorAll("input, textarea, select");
-  const filtered = Array.from(inputs).filter(
-    (el) =>
-      !["checkbox", "radio", "submit", "button", "hidden", "file"].includes(
-        el.type,
-      ),
-  );
+  const seenRadioNames = new Set();
+
+   const filtered = Array.from(inputs).filter((el) => {
+    if (["submit", "button", "hidden", "file"].includes(el.type)) return false;
+    if (el.type === 'radio') {
+      if (seenRadioNames.has(el.name)) return false;
+      seenRadioNames.add(el.name);
+    }
+    return true;
+  });
+
 
   filtered.forEach((el, index) => {
     if (data[index] === undefined) return;
 
-    if (el.tagName === "SELECT") {
+    if (el.type === 'checkbox') {
+      const val = String(data[index]).toLowerCase();
+      el.checked = val === 'true' || val === el.value.toLowerCase();
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    } else if (el.type === 'radio') {
+      const radios = document.querySelectorAll(`input[type="radio"][name="${el.name}"]`);
+      const match = Array.from(radios).find((r) => r.value === data[index]);
+      const pick = match || radios[Math.floor(Math.random() * radios.length)];
+      if (pick) {
+        pick.checked = true;
+        pick.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    } else if (el.tagName === "SELECT") {
       const options = Array.from(el.options);
       const match = options.find(
-        (o) =>
-          o.value === data[index] ||
+        (o) => o.value === data[index] ||
           o.text.trim().toLowerCase() === String(data[index]).toLowerCase(),
       );
       if (match) el.value = match.value;
+      el.dispatchEvent(new Event("change", { bubbles: true }));
     } else {
       el.value = data[index];
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+      el.dispatchEvent(new Event("blur", { bubbles: true }));
     }
-
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-    el.dispatchEvent(new Event("change", { bubbles: true }));
-    el.dispatchEvent(new Event("blur", { bubbles: true }));
   });
 }
+
 
 function getLabel(el) {
   if (el.id) {
@@ -71,28 +88,38 @@ function getLabel(el) {
 }
 
 function scanFields() {
-  const skipTypes = ["checkbox", "radio", "submit", "button", "hidden", "file"];
+  const skipTypes = [ "submit", "button", "hidden", "file"];
   const inputs = document.querySelectorAll("input, textarea, select");
+  const seenRadioNames = new Set();
 
   return Array.from(inputs)
     .filter((el) => !skipTypes.includes(el.type))
     .filter((el) => el.name !== 'g-recaptcha-response')
+    .filter((el) => {
+      if (el.type === 'radio') {
+        if (seenRadioNames.has(el.name)) return false;
+        seenRadioNames.add(el.name);
+      }
+      return true;
+    })
     .map((el, index) => ({
-      index: index,
+      index,
       type: el.type,
       name: el.name,
       id: el.id,
       placeholder: el.placeholder,
-      value: el.value,
-      label: getLabel(el), 
+      value: el.type === 'checkbox' ? (el.checked ? 'true' : 'false') : el.value,
+      label: getLabel(el),
       options:
-        el.tagName === "SELECT"
-          ? Array.from(el.options)
-              .map((o) => o.text)
-              .filter((t) => t.trim())
+        el.type === 'radio'
+          ? Array.from(document.querySelectorAll(`input[type="radio"][name="${el.name}"]`))
+              .map((r) => r.value)
+          : el.tagName === "SELECT"
+          ? Array.from(el.options).map((o) => o.text).filter((t) => t.trim())
           : undefined,
     }));
 }
+
 
 function fakerOr(fakerFn, fallbackFn) {
     if (typeof faker !== 'undefined') {
@@ -124,6 +151,9 @@ function generateValue(field) {
     if (hints.includes('name')) {
         return fakerOr(() => faker.person.fullName(), randomName)
     }
+    if (field.type === 'checkbox') {
+  return Math.random() > 0.5 ? 'true' : 'false';
+}
 
     return 'test input'
 }
