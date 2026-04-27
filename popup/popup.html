@@ -1,41 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Filler</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <div class="container">
-    <div class="header-row">
-  <h1>Smart Fill</h1>
-<button id="popOut" class="btn-popout" title="Open in separate window">
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-  </svg>
-</button>
-</div>
-    <p class="subtitle">Fill forms instantly</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form Filler</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header-row">
+        <h1>Smart Fill</h1>
+        <button id="popOut" class="btn-popout" title="Open in separate window">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M15 3h6v6" />
+            <path d="M10 14 21 3" />
+            <path
+              d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+            />
+          </svg>
+        </button>
+      </div>
+      <p class="subtitle">Fill forms instantly</p>
 
-    <div class="button-group">
-  <button id="fillAI" class="btn btn-ai">✦ AI Fill</button>
-  <button id="fillRandom" class="btn btn-primary">Fill Random Data</button>
-  <button id="saveProfile" class="btn btn-save">Save Current Form</button>
-</div>
+      <div class="button-group">
+        <button id="fillAI" class="btn btn-ai">✦ AI Fill</button>
+        <button id="fillRandom" class="btn btn-primary">
+          Fill Random Data
+        </button>
+        <div class="save-row">
+          <button id="saveProfile" class="btn btn-save">
+            Save Current Form
+          </button>
+          <label class="protect-toggle" title="Encrypt this profile with a PIN">
+            <input type="checkbox" id="protectProfile" />
+            🔒
+          </label>
+        </div>
+      </div>
 
+      <p id="statusMsg" class="status-msg"></p>
 
-    <p id="statusMsg" class="status-msg"></p>
+      <div class="divider"></div>
 
-    <div class="divider"></div>
-
-    <p class="section-label">Saved Profiles</p>
-    <div id="profilesList" class="profiles-list">
-      <p class="empty-msg">No saved profiles yet.</p>
+      <p class="section-label">Saved Profiles</p>
+      <div id="profilesList" class="profiles-list">
+        <p class="empty-msg">No saved profiles yet.</p>
+      </div>
     </div>
-  </div>
 
-  <script src="popup.js"></script>
-</body>
-
+    <script src="crypto.js"></script>
+    <script src="popup.js"></script>
+  </body>
 </html>

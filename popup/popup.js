@@ -31,7 +31,7 @@ document.getElementById("fillRandom").addEventListener("click", () => {
         chrome.tabs.sendMessage(tabs[0].id, { action: "FILL_RANDOM" });
         showStatus("Filled with random data!");
         console.log("Fill stats:", {
-          domain: tabs[0]?.url ? new URL(tabs[0].url).hostname : 'unknown',
+          domain: tabs[0]?.url ? new URL(tabs[0].url).hostname : "unknown",
           totalFields,
           cacheHits: 0,
           regexHits: totalFields,
@@ -48,14 +48,14 @@ document.getElementById("saveProfile").addEventListener("click", () => {
     chrome.tabs.sendMessage(
       tabs[0].id,
       { action: "GET_FIELD_VALUES" },
-      (response) => {
+      async (response) => {
         if (!response || !response.fields || response.fields.length === 0) {
           showStatus("No fields found.", true);
           return;
         }
         const name = prompt("Name this profile:");
         if (!name) return;
-        chrome.storage.local.get("profiles", (result) => {
+        chrome.storage.local.get("profiles", async (result) => {
           const profiles = result.profiles || {};
           profiles[name] = response.fields;
           chrome.storage.local.set({ profiles }, () => {
@@ -116,7 +116,6 @@ document.getElementById("popOut").addEventListener("click", () => {
   window.close();
 });
 
-
 function fillFromProfile(name) {
   chrome.storage.local.get("profiles", (result) => {
     const profile = result.profiles[name];
@@ -157,7 +156,7 @@ document.getElementById("fillAI").addEventListener("click", async () => {
       async (response) => {
         let cacheHit = 0;
         let llmCalls = 0;
-        const domain = tabs[0]?.url ? new URL(tabs[0].url).hostname : 'unknown';
+        const domain = tabs[0]?.url ? new URL(tabs[0].url).hostname : "unknown";
 
         if (!response || !response.fields) {
           showStatus("Could not connect to page. Try refreshing.", true);
