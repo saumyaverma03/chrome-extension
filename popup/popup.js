@@ -57,7 +57,17 @@ document.getElementById("saveProfile").addEventListener("click", () => {
         if (!name) return;
         chrome.storage.local.get("profiles", async (result) => {
           const profiles = result.profiles || {};
-          profiles[name] = response.fields;
+          const isProtected = document.getElementById("protectProfile").checked;
+
+          if (isProtected) {
+            const pin = prompt("Set a PIN for this profile:");
+            if (!pin) return;
+            const encrypted = await encryptProfile(response.fields, pin);
+            profiles[name] = encrypted;
+          } else {
+            profiles[name] = response.fields;
+          }
+
           chrome.storage.local.set({ profiles }, () => {
             showStatus("Saved as " + name);
             loadProfiles();
@@ -83,7 +93,9 @@ function loadProfiles() {
       .map(
         (name) => `
       <div class="profile-row">
-        <span class="profile-name">${name}</span>
+        <span class="profile-name">
+          ${profiles[name].type === "protected" ? "🔒 " : ""}${name}
+        </span>
         <div class="profile-btns">
           <button class="btn-fill" data-name="${name}">Fill</button>
           <button class="btn-delete" data-name="${name}">✕</button>
@@ -116,11 +128,26 @@ document.getElementById("popOut").addEventListener("click", () => {
   window.close();
 });
 
-function fillFromProfile(name) {
-  chrome.storage.local.get("profiles", (result) => {
+async function fillFromProfile(name) {
+  chrome.storage.local.get("profiles", async (result) => {
     const profile = result.profiles[name];
+
+    let fields;
+    if (profile.type === "protected") {
+      const pin = prompt("Enter PIN for this profile:");
+      if (!pin) return;
+      try {
+        fields = await decryptProfile(profile, pin);
+      } catch (e) {
+        showStatus("Wrong PIN.", true);
+        return;
+      }
+    } else {
+      fields = profile;
+    }
+
     const data = {};
-    profile.forEach((field) => {
+    fields.forEach((field) => {
       data[field.index] = field.value;
     });
     getActiveTab((tabs) => {
